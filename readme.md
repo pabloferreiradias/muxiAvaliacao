@@ -16,9 +16,7 @@ Please check the [installation documentation](docs/installation.md).
 
 ## Console usage
 
-* **Run config check** `./bin/setup`
-* **Run jobs**: `php artisan queue:work --timeout=3600`
-* **Create admin user**: `php artisan users:create`
+* **Make the fisrt avaliation**: `php artisan card:information`
 
 ### Code quality
 

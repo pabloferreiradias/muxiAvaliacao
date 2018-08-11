@@ -1,6 +1,6 @@
 # Installation
 
-Clone this repository (`name`).
+Clone this repository (`https://github.com/pabloferreiradias/muxiAvaliacao.git`).
 
 Open its folder `cd muxi`.
 
@@ -17,8 +17,5 @@ Configure `.env`:
 * `APP_ENV` = `production` or `local`
 * `APP_DEBUG` = true (for local) or false (for production)
 * `APP_URL` must be equal to the project URL
-* `JWT_SECRET` fill with any random string like `foobarbaz`
 
-Run `php artisan key:generate` to create a valid unique `APP_KEY`.
-
-Run `php artisan migrate` to migrate the database.
+Create a Database for tests in your Postgres
