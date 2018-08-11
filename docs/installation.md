@@ -8,6 +8,8 @@ Run `composer install` to add its dependencies.
 
 Copy `cp .env.example .env`
 
+Copy `cp phpunit.xml.example phpunit.xml`
+
 If using Docker, copy `cp docker-compose.yml.example docker-compose.yml`
 
 Configure `.env`:
