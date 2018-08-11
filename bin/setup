@@ -1,0 +1,21 @@
+#!/usr/bin/env php
+<?php
+require_once __DIR__ . '/../bootstrap/autoload.php';
+require_once __DIR__ . '/../bootstrap/app.php';
+
+$dotenv = new Dotenv\Dotenv(__DIR__ . '/..');
+$dotenv->load();
+
+// Go to upper directory
+chdir(__DIR__ . '/..');
+
+if (env('APP_ENV') == 'local') {
+    system('composer install');
+} else {
+    system('composer install --no-dev');
+}
+
+echo "\n\n";
+system('php artisan migrate');
+
+system('php bin/check');

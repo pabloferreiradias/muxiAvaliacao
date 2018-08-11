@@ -1,0 +1,134 @@
+#!/usr/bin/env php
+<?php
+require_once __DIR__ . '/../bootstrap/autoload.php';
+require_once __DIR__ . '/../bootstrap/app.php';
+
+$dotenv = new Dotenv\Dotenv(__DIR__ . '/..');
+$dotenv->load();
+
+// Go to upper directory
+chdir(__DIR__ . '/..');
+
+// Try to autocreate some configurations
+if (empty(env('APP_KEY'))) {
+    echo "\n\nAutogenerating APP_KEY...\n  ";
+    system('php artisan key:generate');
+}
+
+$directory = env('JWT_KEYS');
+if ($directory && file_exists($directory) && is_readable($directory)) {
+    $keys = 0;
+
+    foreach (new DirectoryIterator($directory) as $fileInfo) {
+        if ($fileInfo->isDot() || $fileInfo->getFilename() == '.gitignore') {
+            continue;
+        }
+        $keys++;
+    }
+
+    if (empty($keys)) {
+        echo "\n\nAutogenerating JWT keys pair...\n  ";
+        system("ssh-keygen -t rsa -b 4096 -f keys/jwt.wholesaler.key -N ''");
+        system("openssl rsa -in keys/jwt.wholesaler.key -pubout -outform PEM -out keys/jwt.wholesaler.key.pub");
+    }
+}
+
+// Return to current directory
+chdir(__DIR__);
+
+// Environment variables
+echo "\n\nChecking environment variables...\n\n";
+
+$directories = ['APP_STORAGE_PATH', 'JWT_KEYS'];
+$errors = 0;
+
+foreach ($directories as $env) {
+    echo "  \"{$env}\"... ";
+    $directory = env($env);
+
+    if (empty($directory)) {
+        echo "ERROR\n\tShould not be empty\n";
+        $errors++;
+        continue;
+    }
+
+    if (!file_exists($directory)) {
+        echo "ERROR\n\tPath is relative or does not exist: \"{$directory}\"\n";
+        $errors++;
+        continue;
+    }
+
+    if (!is_readable($directory)) {
+        echo "ERROR\n\tPath cannot be read check its permissions: \"{$directory}\"\n";
+        $errors++;
+        continue;
+    }
+
+    echo "OK\n";
+}
+
+$required = ['JWT_SECRET', 'APP_CODE'];
+
+foreach ($required as $env) {
+    echo "  \"{$env}\"... ";
+
+    if (empty(env($env))) {
+        echo "ERROR\n\tShould not be empty\n";
+        $errors++;
+        continue;
+    }
+
+    echo "OK\n";
+}
+
+// JWT keys
+echo "\n\nChecking JWT keys...\n\n";
+
+if ($directory = env('JWT_KEYS') && file_exists($directory) && is_readable($directory)) {
+    $privateKeys = 0;
+    $publicKeys = 0;
+
+    foreach (new DirectoryIterator(env('JWT_KEYS')) as $fileInfo) {
+        $fileName = $fileInfo->getFilename();
+        if ($fileInfo->isDot() || $fileName == '.gitignore') {
+            continue;
+        }
+        echo "  {$fileName}... ";
+
+        $key = file_get_contents($fileInfo->getPathname());
+
+        $function = 'openssl_get_privatekey';
+
+        if ($fileInfo->getExtension() ==  'pub') {
+            $publicKeys++;
+            $function = 'openssl_get_publickey';
+        } else {
+            $privateKeys++;
+        }
+
+        if ($function($key)) {
+            echo "OK\n";
+            continue;
+        }
+        $errors++;
+        echo "ERROR\n";
+    }
+
+    echo "\n  Total: {$privateKeys} private, {$publicKeys} public\n";
+
+    if ($privateKeys == 0) {
+        echo "\tERROR Should have a private key.\n";
+    } elseif ($privateKeys > 1) {
+        echo "\tERROR Should have only one private key, but there are \"{$privateKeys}\".\n";
+    }
+
+    if ($publicKeys == 0) {
+        echo "\tERROR Should have at least one public key.\n";
+    }
+
+} else {
+    echo "  Check \"JWT_KEYS\" environment variable.\n";
+}
+
+// 0 = success
+exit($errors);

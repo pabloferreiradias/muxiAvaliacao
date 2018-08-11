@@ -1,0 +1,72 @@
+{
+    "name": "laravel/laravel",
+    "description": "The Laravel Framework.",
+    "keywords": ["framework", "laravel"],
+    "license": "MIT",
+    "type": "project",
+    "require": {
+        "php": ">=7.1",
+        "karlomikus/multilog": "1.2.*",
+        "laravel/framework": "5.6.*",
+        "laravel/horizon": "*",
+        "predis/predis": "*",
+        "rebing/graphql-laravel": "1.*",
+        "tymon/jwt-auth": "0.5.*",
+        "laravel/tinker": "*"
+    },
+    "require-dev": {
+        "codedungeon/phpunit-result-printer": "*",
+        "friendsofphp/php-cs-fixer": "*",
+        "fzaninotto/faker": "*",
+        "jakub-onderka/php-console-highlighter": "*",
+        "jakub-onderka/php-parallel-lint": "*",
+        "mikey179/vfsStream": "*",
+        "mockery/mockery": "*",
+        "nikic/php-parser": "*",
+        "phpmd/phpmd": "*",
+        "phpro/grumphp": "*",
+        "phpunit/phpunit": "*",
+        "sebastian/phpcpd": "*",
+        "sensiolabs/security-checker": "*",
+        "squizlabs/php_codesniffer": "*"
+    },
+    "autoload": {
+        "classmap": [
+            "database"
+        ],
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "post-root-package-install": [
+            "php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+            "php -r \"file_exists('phpunit.xml') || copy('phpunit.xml.example', 'phpunit.xml');\"",
+            "php ./vendor/bin/grumphp git:init"
+        ],
+        "post-create-project-cmd": [
+            "php artisan key:generate"
+        ]
+    },
+    "config": {
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "optimize-autoloader": true
+    },
+    "extra": {
+        "grumphp": {
+            "config-default-path": "config/grumphp.yml"
+        }
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/fidelize/multilog"
+        }
+    ]
+}

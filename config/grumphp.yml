@@ -1,0 +1,49 @@
+parameters:
+    bin_dir: "./vendor/bin"
+    git_dir: "."
+    stop_on_failure: false
+    ignore_unstaged_changes: false
+    hide_circumvention_tip: false
+    process_timeout: 600
+    ascii:
+        failed: ~
+        succeeded: ~
+    tasks:
+        clover_coverage:
+            clover_file: storage/app/coverage.xml
+            level: 100
+        composer: ~
+        git_blacklist: ~
+        git_branch_name: ~
+        git_commit_message: ~
+        git_conflict: ~
+        phpcpd:
+            exclude: ['bootstrap', 'database', 'tests', 'vendor', 'resources/views']
+        phpcs:
+            standard: PSR2
+            ignore_patterns:
+              - bootstrap/
+              - database/
+              - tests/
+              - vendor/
+              - resources/views/
+        # phpcsfixer2: ~ [LogicException] You must call one of in() or append() methods before iterating over a Finder.
+        phplint: ~
+        phpmd:
+            ruleset: ['/config/phpmd.xml']
+            exclude: ['bootstrap', 'tests', 'database', 'vendor', 'resources/views']
+        phpunit:
+            metadata:
+                blocking: true
+                priority: 1
+        securitychecker: ~
+        phpparser:
+            visitors:
+              no_exit_statements: ~
+              never_use_else: ~
+              forbidden_function_calls:
+                blacklist: [var_dump, dd]
+            metadata:
+              priority: 100000
+    testsuites: []
+    extensions: []
