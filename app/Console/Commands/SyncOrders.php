@@ -5,8 +5,8 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Helpers\WMLBrowser;
 use Symfony\Component\Console\Output\ConsoleOutput;
-use App\Models\Orders;
-use App\Models\OrdersServer;
+use App\Models\Order;
+use App\Models\OrderServer;
 use Carbon\Carbon;
 
 class SyncOrders extends Command
@@ -39,12 +39,12 @@ class SyncOrders extends Command
             $interval = env('INTERVAL_DAYS', 1);
             $endDate = Carbon::now();            
             $beginDate = $endDate->subDays($interval);
-            $ordersNumber = Orders::whereBetween('created_at', [$beginDate->toDateTimeString(), $endDate->toDateTimeString()])->count();
+            $ordersNumber = Order::whereBetween('created_at', [$beginDate->toDateTimeString(), $endDate->toDateTimeString()])->count();
             
         }
 
         if ($force) {
-            $ordersNumber = Orders::count();
+            $ordersNumber = Order::count();
         }
 
         if ($ordersNumber == 0) {
@@ -57,7 +57,7 @@ class SyncOrders extends Command
 
         for ($i=0; $i < $pages; $i++) { 
             $this->info(trans('syncOrders.infoPage', [ 'page' => $i+1 ]));            
-            $orders = Orders::offset($i*self::ORDER_PER_PAGE)->limit(self::ORDER_PER_PAGE)->get();
+            $orders = Order::offset($i*self::ORDER_PER_PAGE)->limit(self::ORDER_PER_PAGE)->get();
             $this->sendOrdersToServer($orders);
         }
 
@@ -66,7 +66,7 @@ class SyncOrders extends Command
     private function sendOrdersToServer($orders)
     {
         foreach ($orders as $order) {
-            $newOrder = new OrdersServer([
+            $newOrder = new OrderServer([
                 'pos_code' => $order->pos_code,
                 'value' => $order->value
             ]);

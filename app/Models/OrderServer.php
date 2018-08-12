@@ -2,11 +2,8 @@
 
 namespace App\Models;
 
-class Order extends BaseModel
+class OrderServer extends BaseModel
 {
-
-    public $items;
-
     protected $connection = 'pgsql_server';
     
     protected $fillable = [

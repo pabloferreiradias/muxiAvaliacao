@@ -4,8 +4,6 @@ namespace App\Models;
 
 class Order extends BaseModel
 {
-
-    public $items;
     
     protected $fillable = [
         'id',

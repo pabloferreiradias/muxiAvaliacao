@@ -2,44 +2,77 @@
 
 namespace App\Models;
 
+use Validator;
+use Log;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Validator;
 
-class BaseModel extends Model{
+abstract class BaseModel extends Model
+{
+    /**
+     * @var Illuminate\Support\MessageBag|null
+     */
+    protected $errors;
 
-    public $errors;
-    
-    public $rules;
+    /**
+     * @return array[] Validation rules
+     */
+    protected function rules()
+    {
+        return [];
+    }
 
+    /**
+     * @return array[] Validation messages
+     */
+    protected function messages()
+    {
+        return [];
+    }
+
+    /**
+     * @return Illuminate\Validation\Validator
+     */
+    protected function getValidator()
+    {
+        return Validator::make($this->getAttributes(), $this->rules(), $this->messages());
+    }
+
+    /**
+     * Validates this model data. The errors will be stored in $this->getErrors()
+     * @return boolean Success or failure
+     */
     public function validate()
     {
-        if(empty($this->rules)){
-            throw new \Exception('You should set rules for your model validation');
-        }
-        if(!is_array($this->rules)){
-            throw new \Exception('Rules should be an array');
-        }
-        $v = Validator::make($this->attributes, $this->rules);
-        // return the result
-        if( $v->fails() ){
-            $this->errors = $v->invalid();
+        $validator = $this->getValidator();
+
+        if ($validator->fails()) {
+            $messages = json_encode($validator->messages(), JSON_UNESCAPED_UNICODE);
+            Log::error($messages);
+            $this->errors = $validator->messages();
             return false;
         }
+
         return true;
     }
 
+    /**
+     * @return Illuminate\Support\MessageBag|null
+     */
+    public function getErrors()
+    {
+        return $this->errors;
+    }
+
+    /**
+     * Use validate before save the model
+     * @param array $options
+     * @return bool
+     */
     public function save(array $options = [])
     {
-        if( !$this->validate() ){
+        if (!$this->validate()) {
             return false;
         }
-        parent::save($options);
-        return true;
+        return parent::save($options);
     }
-
-    public function saveWithoutValidate(array $options = [])
-    {
-        parent::save($options);
-        return true;
-    }    
 }

@@ -15,6 +15,8 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         \App\Console\Commands\CreateUser::class,
         \App\Console\Commands\CardInformation::class,
+        \App\Console\Commands\CreateOrders::class,
+        \App\Console\Commands\SyncOrders::class,
     ];
 
     /**

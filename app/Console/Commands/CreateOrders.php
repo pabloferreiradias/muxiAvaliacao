@@ -55,7 +55,7 @@ class CreateOrders extends Command
            $order->save();
         } catch (\Exception $ex) {
             throw new \UnexpectedValueException(
-                trans('createOrders.errorCreation')
+                trans('createOrders.errorCreation')." Error: ".$ex
             );
             return false;            
         }
