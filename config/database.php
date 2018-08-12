@@ -78,6 +78,17 @@ return [
             'prefix' => '',
         ],
 
+        'pgsql_server' => [
+            'driver' => 'pgsql',
+            'host' => env('DB_HOST_SECOND', 'localhost'),
+            'port' => env('DB_PORT_SECOND', '5432'),
+            'database' => env('DB_DATABASE_SECOND', 'forge'),
+            'username' => env('DB_USERNAME_SECOND', 'forge'),
+            'password' => env('DB_PASSWORD_SECOND', ''),
+            'charset' => 'utf8',
+            'prefix' => '',
+        ],
+
         'testing' => [
             'driver' => env('TEST_DB_CONNECTION'),
             'host' => env('TEST_DB_HOST'),
