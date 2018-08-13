@@ -17,6 +17,8 @@ Please check the [installation documentation](docs/installation.md).
 ## Console usage
 
 * **Make the fisrt avaliation**: `php artisan card:information`
+* **Make the second avaliation**: `php artisan order:sync`
+* **Create 10 fake orders**: `php artisan order:create 10`
 
 ### Code quality
 
