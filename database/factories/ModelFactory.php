@@ -11,3 +11,23 @@ $factory->define(
         ];
     }
 );
+
+$factory->define(
+    App\Models\Order::class,
+    function (Faker\Generator $faker) {
+        return [
+            'pos_code' => str_random(10),
+            'value' => mt_rand(10, 100)
+        ];
+    }
+);
+
+$factory->define(
+    App\Models\OrderServer::class,
+    function (Faker\Generator $faker) {
+        return [
+            'pos_code' => str_random(10),
+            'value' => mt_rand(10, 100)
+        ];
+    }
+);
