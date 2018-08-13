@@ -22,27 +22,5 @@ class UserTest extends TestCase
         $this->assertTrue($user->isAdministrator());
     }
 
-    public function testSaveShouldValidate()
-    {
-        $user = factory(User::class)->create([
-            'userable_type' => null,
-            'userable_id' => null,
-        ]);
-        $user->name = '';
-        $this->assertFalse($user->save());
-        $user->name = 'opaopa';
-        $this->assertTrue($user->save());
-    }
-
-    public function testShouldAllowSaveWithoutValidate()
-    {
-        $user = factory(User::class)->create([
-            'userable_type' => null,
-            'userable_id' => null,
-        ]);
-        $user->name = '';
-        $this->assertTrue($user->saveWithoutValidate());
-    }
-
 
 }

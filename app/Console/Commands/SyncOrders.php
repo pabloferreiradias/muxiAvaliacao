@@ -8,10 +8,15 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 use App\Models\Order;
 use App\Models\OrderServer;
 use Carbon\Carbon;
+use DB;
+use Log;
 
 class SyncOrders extends Command
 {
     const ORDER_PER_PAGE = 10;
+
+    protected $beginDate;
+    protected $endDate;
 
     /**
      * @var string
@@ -37,9 +42,10 @@ class SyncOrders extends Command
 
         if (!$force) {
             $interval = env('INTERVAL_DAYS', 1);
-            $endDate = Carbon::now();            
-            $beginDate = $endDate->subDays($interval);
-            $ordersNumber = Order::whereBetween('created_at', [$beginDate->toDateTimeString(), $endDate->toDateTimeString()])->count();
+            $this->endDate = Carbon::now();
+            $this->beginDate = Carbon::now();
+            $this->beginDate->subDays($interval);
+            $ordersNumber = Order::whereBetween('created_at', [$this->beginDate->toDateTimeString(), $this->endDate->toDateTimeString()])->count();
             
         }
 
@@ -53,14 +59,44 @@ class SyncOrders extends Command
         }
 
         $pages = round($ordersNumber/self::ORDER_PER_PAGE);
-        $this->info(trans('syncOrders.beginSyncOrder', [ 'numPages' => $pages ]));
+        $this->info(trans('syncOrders.beginSyncOrder', [ 'numOrders' => $ordersNumber, 'numPages' => $pages ]));
+
+        // Start transaction!
+        DB::beginTransaction();
+        DB::connection('pgsql_server')->beginTransaction();
 
         for ($i=0; $i < $pages; $i++) { 
             $this->info(trans('syncOrders.infoPage', [ 'page' => $i+1 ]));            
-            $orders = Order::offset($i*self::ORDER_PER_PAGE)->limit(self::ORDER_PER_PAGE)->get();
+            $orders = $this->getOrdersPaginated($i, $force);
             $this->sendOrdersToServer($orders);
         }
 
+        if (!$force) {
+            try {
+               $orders = Order::whereBetween('created_at', [$this->beginDate->toDateTimeString(), $this->endDate->toDateTimeString()])->delete();
+            } catch (\Exception $ex) {
+                $this->info(trans('syncOrders.massDeleteError'));
+                DB::rollback();
+                DB::connection('pgsql_server')->rollback();        
+                return false;            
+            }            
+        }
+
+        if ($force) {
+            try {
+                $orders = Order::where('id', '>=', 1)->delete();
+            } catch (\Exception $ex) {
+                $this->info(trans('syncOrders.massDeleteError'));
+                DB::rollback();
+                DB::connection('pgsql_server')->rollback();        
+                return false;            
+            }     
+        }
+
+        DB::commit();
+        DB::connection('pgsql_server')->commit();
+
+        return true;
     }
 
     private function sendOrdersToServer($orders)
@@ -70,7 +106,23 @@ class SyncOrders extends Command
                 'pos_code' => $order->pos_code,
                 'value' => $order->value
             ]);
-            $newOrder->save();
+            try {
+                $newOrder->save();
+            } catch (\Exception $ex) {
+                $this->info(trans('syncOrders.errorSaveOrderInServer'));
+                DB::rollback();
+                DB::connection('pgsql_server')->rollback();        
+                return false;            
+            }
         }
+    }
+
+    private function getOrdersPaginated($page, $force)
+    {
+        if ($force) {
+            return Order::offset($page*self::ORDER_PER_PAGE)->limit(self::ORDER_PER_PAGE)->get();
+        }
+            
+        return Order::whereBetween('created_at', [$this->beginDate->toDateTimeString(), $this->endDate->toDateTimeString()])->offset($page*self::ORDER_PER_PAGE)->limit(self::ORDER_PER_PAGE)->get();        
     }
 }
